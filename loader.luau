@@ -21,9 +21,11 @@
 	  getgenv().ORACLE_HUB_REPO = "https://raw.githubusercontent.com/otro/repo/main"
 ]]
 
-local HUB_VERSION = "1.1.0"
+local HUB_VERSION = "1.2.0"
 local REPO = getgenv().ORACLE_HUB_REPO
 	or "https://raw.githubusercontent.com/yadieldanger/oracle-hub/main"
+local API_REPO = getgenv().ORACLE_HUB_API_REPO or "yadieldanger/oracle-hub"
+local API_REF = getgenv().ORACLE_HUB_REF or "main"
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
@@ -65,12 +67,58 @@ local function notify(title, text, dur)
 	end)
 end
 
+-- token de acceso al repo (privado): getgenv().ORACLE_HUB_PAT o hub_pat.json
+local patLoaded = nil
+local function loadPat()
+	if patLoaded ~= nil then return patLoaded end
+	patLoaded = false
+	if getgenv().ORACLE_HUB_PAT then
+		patLoaded = tostring(getgenv().ORACLE_HUB_PAT)
+	else
+		pcall(function()
+			patLoaded = tostring(HttpService:JSONDecode(readfile("hub_pat.json")).pat)
+		end)
+	end
+	if patLoaded then
+		hubLog("token de repo privado cargado")
+	end
+	return patLoaded
+end
+
 local function fetch(path)
 	-- desarrollo: getgenv().ORACLE_HUB_LOCAL_GAME = ruta local del script del juego
 	if getgenv().ORACLE_HUB_LOCAL_GAME and path ~= "index.json" then
 		hubLog("modo local: " .. tostring(getgenv().ORACLE_HUB_LOCAL_GAME))
 		return readfile(tostring(getgenv().ORACLE_HUB_LOCAL_GAME))
 	end
+
+	-- repo PRIVADO: contents API con token (raw directo vía Accept header)
+	local pat = loadPat()
+	if pat then
+		local ok, res = pcall(function()
+			return request({
+				Url = ("https://api.github.com/repos/%s/contents/%s?ref=%s")
+					:format(API_REPO, path, API_REF),
+				Headers = {
+					Authorization = "Bearer " .. pat,
+					Accept = "application/vnd.github.raw",
+					["X-GitHub-Api-Version"] = "2022-11-28",
+				},
+			})
+		end)
+		if not ok then
+			return nil, res
+		end
+		if type(res) == "table" then
+			if res.StatusCode == 200 and res.Body then
+				return res.Body
+			end
+			return nil, ("HTTP %s"):format(tostring(res.StatusCode))
+		end
+		return nil, tostring(res)
+	end
+
+	-- repo PÚBLICO: raw clásico
 	local url = REPO .. "/" .. path .. "?t=" .. tostring(math.floor(tick() * 1000))
 	local ok, res = pcall(function()
 		return game:HttpGet(url, true)
