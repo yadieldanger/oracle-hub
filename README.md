@@ -1,25 +1,29 @@
 # ⚡ Oracle Hub — sistema universal de scripts para Roblox
 
 Un solo script universal que **detecta el juego** y carga automáticamente
-el script correcto desde GitHub raw.
+el script correcto desde GitHub raw. Un hub, muchos juegos.
 
 ## Ejecutar (una línea en tu executor)
 
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/TU-USUARIO/oracle-hub/main/loader.luau"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/yadieldanger/oracle-hub/main/loader.luau"))()
 ```
-
-(cambia `TU-USUARIO` por tu usuario de GitHub)
 
 ## Estructura
 
 ```
 oracle-hub/
-├── loader.luau               ← el universal (punto de entrada)
-├── index.json                ← manifiesto: placeId → script
+├── loader.luau    ← el universal (punto de entrada, multi-juego)
+├── index.json     ← manifiesto: placeId → script
 └── games/
-    └── 110527353762049.luau  ← Oracle Trader (Bolsa de Valores de Roblox 2)
+    └── <placeId>.luau  ← un archivo por juego
 ```
+
+## Juegos en el hub
+
+| Juego | Script |
+|---|---|
+| Bolsa de Valores de Roblox 2 | `games/110527353762049.luau` (Oracle Trader) |
 
 ## Cómo añadir un juego nuevo
 
@@ -37,8 +41,8 @@ oracle-hub/
 }
 ```
 
-3. Listo — el universal lo detectará solo en ese juego; en otros juegos
-   abrirá el menú con todos los scripts disponibles.
+3. `git add -A && git commit -m "nuevo juego" && git push` — los clientes lo
+   reciben automáticamente al ejecutar la misma línea.
 
 ## Contrato de los scripts de juego
 
@@ -55,9 +59,9 @@ getgenv().ORACLE_HUB_INDEX_OVERRIDE = { ... }   -- dev: manifiesto en memoria
 getgenv().ORACLE_HUB_LOCAL_GAME = "ruta.luau"   -- dev: carga el script desde disco
 ```
 
-## Subir a GitHub
+## Notas técnicas
 
-1. Crea un repo **público** llamado `oracle-hub` (con README).
-2. Sube `loader.luau`, `index.json` y la carpeta `games/` respetando la estructura.
-3. Edita la línea `REPO = ...` de `loader.luau` con tu usuario.
-4. Pega el one-liner en tu executor y listo.
+- Cache-busting en cada fetch (`?t=…`): los clientes siempre reciben la
+  última versión al reejecutar.
+- Teardown en cadena: nunca quedan dos scripts de juego vivos.
+- Sin dependencias: el menú del hub es GUI propia (Instance.new).
