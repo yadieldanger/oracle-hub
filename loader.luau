@@ -23,7 +23,7 @@
 
 local HUB_VERSION = "1.1.0"
 local REPO = getgenv().ORACLE_HUB_REPO
-	or "https://raw.githubusercontent.com/TU-USUARIO/oracle-hub/main"
+	or "https://raw.githubusercontent.com/yadieldanger/oracle-hub/main"
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
