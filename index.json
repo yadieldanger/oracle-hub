@@ -1,0 +1,15 @@
+{
+  "hub": "oracle-hub",
+  "version": "1.0.0",
+  "updated": "2026-10-31",
+  "games": [
+    {
+      "id": "110527353762049",
+      "gameId": "10495391267",
+      "name": "Bolsa de Valores de Roblox 2",
+      "script": "games/110527353762049.luau",
+      "version": "6.0.0",
+      "description": "Oracle Trader v6 — oráculo de precios, hot hunter, límites en el valle"
+    }
+  ]
+}
